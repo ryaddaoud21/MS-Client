@@ -6,3 +6,5 @@ cryptography==3.4.7  # Pour gérer la sécurité et les tokens
 gunicorn==20.1.0  # Serveur WSGI pour déploiement
 pytest==6.2.4  # Pour les tests unitaires
 requests==2.25.1  # Pour faire des requêtes HTTP (optionnel, si vous en avez besoin)
+Flask-SQLAlchemy==2.5.1
+SQLAlchemy==1.4.49
