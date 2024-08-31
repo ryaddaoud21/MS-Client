@@ -2,6 +2,10 @@ from flask import Flask, jsonify, request, make_response
 from functools import wraps
 import secrets
 from flask_sqlalchemy import SQLAlchemy
+import threading
+import pika
+import json
+from API.pika_config import get_rabbitmq_connection
 
 # Initialisation de l'application Flask
 app = Flask(__name__)
@@ -187,5 +191,27 @@ def delete_client(id):
         return jsonify({'message': 'Client deleted'})
     return jsonify({'message': 'Client not found'}), 404
 
+def consume_order_notifications():
+    connection = get_rabbitmq_connection()
+    channel = connection.channel()
+    channel.exchange_declare(exchange='order_notifications', exchange_type='fanout')
+
+    result = channel.queue_declare(queue='', exclusive=True)
+    queue_name = result.method.queue
+
+    channel.queue_bind(exchange='order_notifications', queue=queue_name)
+
+    def callback(ch, method, properties, body):
+        message = json.loads(body)
+        # Logique pour envoyer une notification au client, etc.
+        print(f"Received order notification for client: {message}")
+
+    channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+    channel.start_consuming()
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Lancer l'écoute des messages RabbitMQ dans un thread séparé
+    threading.Thread(target=consume_order_notifications, daemon=True).start()
+
+    # Lancer le serveur Flask
+    app.run(debug=True, port=5001)
