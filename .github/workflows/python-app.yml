@@ -67,7 +67,7 @@ jobs:
         git config --local user.name "GitHub Actions"
         git add .
         git commit -m "Tests passed: pushing changes"
-        git push https://<TOKEN>@github.com/ryaddaoud21/MS-Client.git main
+        git push https://${{ secrets.PAT_TOKEN }}@github.com/ryaddaoud21/MS-Client.git main
       env:
         TOKEN: ${{ secrets.PAT_TOKEN }}
     
@@ -80,6 +80,6 @@ jobs:
         git checkout -b $NEW_BRANCH
         git add .
         git commit -m "Tests failed: moving changes to $NEW_BRANCH"
-        git push https://<TOKEN>@github.com/ryaddaoud21/MS-Client.git $NEW_BRANCH
+        git push https://${{ secrets.PAT_TOKEN }}@github.com/ryaddaoud21/MS-Client.git $NEW_BRANCH
       env:
         TOKEN: ${{ secrets.PAT_TOKEN }}
