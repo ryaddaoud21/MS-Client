@@ -1,0 +1,82 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: client_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Set environment variables
+      run: |
+        echo "SQLALCHEMY_SILENCE_UBER_WARNING=1" >> $GITHUB_ENV
+
+    - name: Run tests
+      env:
+        DATABASE_URL: "mysql+pymysql://root:root@localhost/client_db"
+      run: |
+        python -m unittest discover -s TEST
+      continue-on-error: true  # Continue the workflow even if this step fails
+
+    - name: Determine the result of tests
+      id: test_result
+      run: |
+        if [ $? -eq 0 ]; then
+          echo "tests_passed=true" >> $GITHUB_ENV
+        else
+          echo "tests_passed=false" >> $GITHUB_ENV
+        fi
+
+    - name: Push changes to main branch
+      if: env.tests_passed == 'true'
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
+        git checkout main
+        git add .
+        git commit -m "Tests passed: pushing changes"
+        git push origin main
+
+    - name: Create and push a new branch with commit ID
+      if: env.tests_passed == 'false'
+      run: |
+        git config --local user.email "actions@github.com"
+        git config --local user.name "GitHub Actions"
+        NEW_BRANCH="fix-tests-${{ github.sha }}"
+        git checkout -b $NEW_BRANCH
+        git add .
+        git commit -m "Tests failed: moving changes to $NEW_BRANCH"
+        git push origin $NEW_BRANCH
