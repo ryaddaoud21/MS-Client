@@ -59,17 +59,18 @@ jobs:
         else
           echo "tests_passed=false" >> $GITHUB_ENV
         fi
-
+        
     - name: Push changes to main branch
       if: env.tests_passed == 'true'
       run: |
         git config --local user.email "actions@github.com"
         git config --local user.name "GitHub Actions"
-        git checkout main
         git add .
         git commit -m "Tests passed: pushing changes"
-        git push origin main
-
+        git push https://${{ secrets.PAT_TOKEN }}@github.com/ryaddaoud21/MS-Client.git main
+      env:
+        TOKEN: ${{ secrets.PAT_TOKEN }}
+    
     - name: Create and push a new branch with commit ID
       if: env.tests_passed == 'false'
       run: |
@@ -78,5 +79,7 @@ jobs:
         NEW_BRANCH="fix-tests-${{ github.sha }}"
         git checkout -b $NEW_BRANCH
         git add .
-        git commit -m "Tests failed: moving changes to : $NEW_BRANCH"
-        git push origin $NEW_BRANCH
+        git commit -m "Tests failed: moving changes to $NEW_BRANCH"
+        git push https://${{ secrets.PAT_TOKEN }}@github.com/ryaddaoud21/MS-Client.git $NEW_BRANCH
+      env:
+        TOKEN: ${{ secrets.PAT_TOKEN }}
