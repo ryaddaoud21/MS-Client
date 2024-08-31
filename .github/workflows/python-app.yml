@@ -78,5 +78,5 @@ jobs:
         NEW_BRANCH="fix-tests-${{ github.sha }}"
         git checkout -b $NEW_BRANCH
         git add .
-        git commit -m "Tests failed: moving changes to $NEW_BRANCH"
+        git commit -m "Tests failed: moving changes to : $NEW_BRANCH"
         git push origin $NEW_BRANCH
