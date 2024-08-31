@@ -46,7 +46,6 @@ class ClientTestCase(unittest.TestCase):
             'password': 'wrongpassword'
         })
         self.assertEqual(response.status_code, 401)
-        #self.assertEqual(response.status_code, 200)
 
     def test_get_all_clients(self):
         response = self.app.get('/customers', headers={'Authorization': f'Bearer {self.admin_token}'})
