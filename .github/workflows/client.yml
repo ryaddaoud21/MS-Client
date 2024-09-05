@@ -24,7 +24,7 @@ jobs:
 
     - name: Build and push client image
       run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/ms-client:${{ github.sha }} ./MS-CLIENT
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/ms-client:${{ github.sha }} .
         docker tag ${{ secrets.DOCKER_USERNAME }}/ms-client:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/ms-client:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/ms-client:${{ github.sha }}
         docker push ${{ secrets.DOCKER_USERNAME }}/ms-client:latest
