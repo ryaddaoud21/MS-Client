@@ -10,9 +10,7 @@ from .pika_config import get_rabbitmq_connection
 app = Flask(__name__)
 
 # Configuration de la base de données MySQL
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root@localhost/client_db'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root@mysql-db/client_db'
-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialisation de SQLAlchemy
@@ -192,6 +190,7 @@ def delete_client(id):
         return jsonify({'message': 'Client deleted'})
     return jsonify({'message': 'Client not found'}), 404
 
+# RabbitMQ consumer for order notifications
 def consume_order_notifications():
     connection = get_rabbitmq_connection()
     channel = connection.channel()
@@ -204,15 +203,15 @@ def consume_order_notifications():
 
     def callback(ch, method, properties, body):
         message = json.loads(body)
-        # Logique pour envoyer une notification au client, etc.
+        # Logic to send notification to client
         print(f"Received order notification for client: {message}")
 
     channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
     channel.start_consuming()
 
 if __name__ == '__main__':
-    # Lancer l'écoute des messages RabbitMQ dans un thread séparé
+    # Start RabbitMQ consumer in a separate thread
     threading.Thread(target=consume_order_notifications, daemon=True).start()
 
-    # Lancer le serveur Flask
+    # Run Flask server
     app.run(host='0.0.0.0', port=5001)
