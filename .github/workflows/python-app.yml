@@ -37,8 +37,10 @@ jobs:
         git add .
         if ! git diff-index --quiet HEAD; then
           git commit -m "Auto-commit: Fix tests or update"
+          git push origin HEAD
         else
           echo "No changes to commit"
+        fi
 
     - name: Push changes to main branch
       if: success() && steps.run_tests.outcome == 'success'
