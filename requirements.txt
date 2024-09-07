@@ -4,7 +4,6 @@ SQLAlchemy==1.4.23
 pymysql==1.0.2
 cryptography==3.4.7
 gunicorn==20.1.0
-pytest==6.2.4
 requests==2.25.1
 Werkzeug==2.0.1
 pika==1.2.0  # Assurez-vous que pika est inclus pour RabbitMQ
