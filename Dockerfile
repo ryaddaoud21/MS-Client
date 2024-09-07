@@ -10,4 +10,4 @@ RUN pip install --no-cache-dir -r requirements.txt waitress
 
 EXPOSE 5001
 
-CMD ["waitress-serve", "--port=5001", "API.client_endpoints:app"]
+CMD ["waitress-serve", "--port=5001", "client_api:app"]

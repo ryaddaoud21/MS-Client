@@ -13,6 +13,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root@mysql-db/client_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+
 # Initialisation de SQLAlchemy
 db = SQLAlchemy(app)
 
@@ -211,7 +212,7 @@ def consume_order_notifications():
 
 if __name__ == '__main__':
     # Start RabbitMQ consumer in a separate thread
-    threading.Thread(target=consume_order_notifications, daemon=True).start()
+    #threading.Thread(target=consume_order_notifications, daemon=True).start()
 
     # Run Flask server
     app.run(host='0.0.0.0', port=5001)
