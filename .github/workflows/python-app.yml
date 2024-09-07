@@ -29,7 +29,7 @@ jobs:
     - name: Run tests
       id: run_tests  # Assign an ID to this step
       run: |
-        python -m unittest discover -s TEST
+        pytest
 
     - name: Push changes to main branch
       if: success()

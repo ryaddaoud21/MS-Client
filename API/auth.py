@@ -52,6 +52,7 @@ def login():
     if not data or not 'username' in data or not 'password' in data:
         return jsonify({"msg": "Username and password required"}), 400
 
+    # Liste d'utilisateurs fictifs
     users = {
         "admin": {"password": "password", "role": "admin"},
         "user1": {"password": "userpass", "role": "user"}
