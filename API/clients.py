@@ -20,10 +20,32 @@ def get_clients():
         "pays": c.pays
     } for c in clients]), 200
 
+# Route pour obtenir un client par ID (GET)
+@clients_blueprint.route('/customers/<int:id>', methods=['GET'])
+def get_client(id):
+    client = Client.query.get(id)
+    if not client:
+        return jsonify({'message': 'Client not found'}), 404
+
+    return jsonify({
+        "id": client.id,
+        "nom": client.nom,
+        "prenom": client.prenom,
+        "email": client.email,
+        "telephone": client.telephone,
+        "adresse": client.adresse,
+        "ville": client.ville,
+        "code_postal": client.code_postal,
+        "pays": client.pays
+    }), 200
+
 # Route pour créer un nouveau client (POST)
 @clients_blueprint.route('/customers', methods=['POST'])
 def create_client():
     data = request.json
+    if not data or not all(key in data for key in ['nom', 'prenom', 'email']):
+        return jsonify({'message': 'Nom, prénom, et email sont obligatoires'}), 400
+
     new_client = Client(
         nom=data['nom'],
         prenom=data['prenom'],
