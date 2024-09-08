@@ -1,4 +1,6 @@
 from flask import Blueprint, jsonify, request
+from sqlalchemy.exc import IntegrityError
+
 from API.models import db, Client
 
 # Création du blueprint pour les routes des clients
@@ -68,6 +70,8 @@ def update_client(id):
         return jsonify({'message': 'Client not found'}), 404
 
     data = request.json
+
+    # Mise à jour des champs du client
     client.nom = data.get('nom', client.nom)
     client.prenom = data.get('prenom', client.prenom)
     client.email = data.get('email', client.email)
@@ -77,8 +81,14 @@ def update_client(id):
     client.code_postal = data.get('code_postal', client.code_postal)
     client.pays = data.get('pays', client.pays)
 
-    db.session.commit()
-    return jsonify({"id": client.id, "nom": client.nom, "prenom": client.prenom, "email": client.email}), 200
+    try:
+        db.session.commit()
+        return jsonify({"id": client.id, "nom": client.nom, "prenom": client.prenom, "email": client.email}), 200
+    except IntegrityError as e:
+        db.session.rollback()  # Annuler la transaction en cours
+        return jsonify({"error": "Integrity error: " + str(e.orig)}), 400
+
+
 
 # Route pour supprimer un client par ID (DELETE)
 @clients_blueprint.route('/customers/<int:id>', methods=['DELETE'])
@@ -87,6 +97,10 @@ def delete_client(id):
     if not client:
         return jsonify({'message': 'Client not found'}), 404
 
-    db.session.delete(client)
-    db.session.commit()
-    return jsonify({'message': 'Client deleted successfully'}), 200
+    try:
+        db.session.delete(client)
+        db.session.commit()
+        return jsonify({'message': 'Client deleted successfully'}), 200
+    except IntegrityError:
+        db.session.rollback()  # Annuler la transaction en cours
+        return jsonify({'message': 'Cannot delete client. There are associated orders.'}), 400
