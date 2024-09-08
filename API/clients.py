@@ -6,6 +6,8 @@ from API.models import db, Client
 # Création du blueprint pour les routes des clients
 clients_blueprint = Blueprint('clients', __name__)
 
+
+
 # Route pour obtenir tous les clients (GET)
 @clients_blueprint.route('/customers', methods=['GET'])
 def get_clients():

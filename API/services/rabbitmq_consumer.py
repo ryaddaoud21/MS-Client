@@ -1,6 +1,19 @@
 import json
 import pika
+from flask import jsonify
+
+from API.clients import clients_blueprint
 from API.services.pika_config import get_rabbitmq_connection
+
+
+# A global variable to store notifications
+order_notifications = []
+
+# Route to get all notifications
+@clients_blueprint.route('/notifications', methods=['GET'])
+def get_notifications():
+    return jsonify(order_notifications), 200
+
 
 # RabbitMQ consumer for order notifications
 def consume_order_notifications():
@@ -15,6 +28,10 @@ def consume_order_notifications():
 
     def callback(ch, method, properties, body):
         message = json.loads(body)
+        formatted_message = f"Received order notification: {message}"
+
+        # Store the formatted notification
+        order_notifications.append(formatted_message)
         # Logic to send notification to client
         print(f"Received order notification for client: {message}")
 
