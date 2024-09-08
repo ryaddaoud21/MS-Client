@@ -8,6 +8,6 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt waitress
 
 
-EXPOSE 5001
+EXPOSE 5001 8000
 
 CMD ["waitress-serve", "--port=5001", "client_api:app"]
