@@ -14,14 +14,6 @@ clients_blueprint = Blueprint('clients', __name__)
 REQUEST_COUNT = Counter('client_requests_total', 'Total number of requests for clients')
 REQUEST_LATENCY = Summary('client_processing_seconds', 'Time spent processing client requests')
 
-# Configurer l'endpoint des métriques pour Prometheus
-@clients_blueprint.route('/metrics', methods=['GET'])
-def metrics():
-    registry = CollectorRegistry()
-    multiprocess.MultiProcessCollector(registry)
-    data = generate_latest(registry)
-    return make_response(data, 200, {'Content-Type': CONTENT_TYPE_LATEST})
-
 
 # Route pour obtenir tous les clients (GET)
 @clients_blueprint.route('/customers', methods=['GET'])
