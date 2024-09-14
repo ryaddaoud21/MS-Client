@@ -37,3 +37,22 @@ def consume_order_notifications():
 
     channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
     channel.start_consuming()
+
+
+def verify_token(token):
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
+    channel = connection.channel()
+    channel.queue_declare(queue='auth_requests')
+
+    message = {'token': token}
+    channel.basic_publish(exchange='', routing_key='auth_requests', body=json.dumps(message))
+
+    # Listen for the response
+    response = None
+    for method_frame, properties, body in channel.consume('auth_responses', inactivity_timeout=1):
+        if body:
+            response = json.loads(body)
+        break
+
+    connection.close()
+    return response.get('authenticated', False), response.get('role')
