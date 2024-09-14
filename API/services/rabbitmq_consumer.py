@@ -55,4 +55,8 @@ def verify_token(token):
         break
 
     connection.close()
+    formatted_message = f"User authenticated"
+
+    # Store the formatted notification
+    order_notifications.append(formatted_message)
     return response.get('authenticated', False), response.get('role')
