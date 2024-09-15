@@ -5,6 +5,7 @@ from API.models import db, Client
 from prometheus_client import Counter, Summary, generate_latest, CONTENT_TYPE_LATEST
 from prometheus_client import multiprocess, CollectorRegistry
 from prometheus_client import multiprocess
+from auth import token_required,admin_required
 
 
 # Création du blueprint pour les routes des clients
@@ -18,6 +19,7 @@ REQUEST_LATENCY = Summary('client_processing_seconds', 'Time spent processing cl
 # Route pour obtenir tous les clients (GET)
 @clients_blueprint.route('/customers', methods=['GET'])
 @REQUEST_LATENCY.time()
+@token_required
 def get_clients():
     REQUEST_COUNT.inc()  # Incrémenter le compteur de requêtes
     clients = Client.query.all()
@@ -35,6 +37,7 @@ def get_clients():
 
 # Route pour obtenir un client par ID (GET)
 @clients_blueprint.route('/customers/<int:id>', methods=['GET'])
+@token_required
 def get_client(id):
     client = Client.query.get(id)
     if not client:
@@ -54,6 +57,8 @@ def get_client(id):
 
 # Route pour créer un nouveau client (POST)
 @clients_blueprint.route('/customers', methods=['POST'])
+@token_required
+@admin_required
 def create_client():
     data = request.json
     new_client = Client(
@@ -74,6 +79,8 @@ def create_client():
 
 # Route pour mettre à jour un client par ID (PUT)
 @clients_blueprint.route('/customers/<int:id>', methods=['PUT'])
+@token_required
+@admin_required
 def update_client(id):
     client = Client.query.get(id)
     if client:
@@ -93,6 +100,8 @@ def update_client(id):
 
 # Route pour supprimer un client par ID (DELETE)
 @clients_blueprint.route('/customers/<int:id>', methods=['DELETE'])
+@token_required
+@admin_required
 def delete_client(id):
     client = Client.query.get(id)
     if client:
