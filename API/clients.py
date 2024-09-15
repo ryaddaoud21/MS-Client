@@ -5,7 +5,7 @@ from API.models import db, Client
 from prometheus_client import Counter, Summary, generate_latest, CONTENT_TYPE_LATEST
 from prometheus_client import multiprocess, CollectorRegistry
 from prometheus_client import multiprocess
-from auth import token_required,admin_required
+from API.auth  import token_required,admin_required
 
 
 # Création du blueprint pour les routes des clients
