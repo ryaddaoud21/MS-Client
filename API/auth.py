@@ -11,7 +11,49 @@ valid_tokens = {}
 def generate_token():
     return secrets.token_urlsafe(32)
 
+import requests
 
+USER_SERVICE_URL = "http://localhost:5004/validate_token"
+
+def token_required(f):
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+
+        if not token or not token.startswith('Bearer '):
+            return jsonify({'message': 'Token is missing or invalid!'}), 401
+
+        token = token.split('Bearer ')[1]
+
+        # Appel à ms-utilisateur pour valider le token
+        response = requests.post(USER_SERVICE_URL, json={'token': token})
+
+        if response.status_code != 200 or not response.json().get('valid'):
+            return jsonify({'message': 'Token validation failed!'}), 401
+
+        # Si le token est valide, continuer la requête
+        return f(*args, **kwargs)
+    return decorated
+
+
+def admin_required(f):
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+
+        if not token or not token.startswith('Bearer '):
+            return jsonify({'message': 'Token is missing or invalid!'}), 401
+
+        token = token.split('Bearer ')[1]
+
+        # Appel à ms-utilisateur pour valider le token et vérifier le rôle
+        response = requests.post(USER_SERVICE_URL, json={'token': token})
+
+        if response.status_code != 200 or response.json().get('role') != 'admin':
+            return jsonify({'message': 'Admin access required!'}), 403
+
+        return f(*args, **kwargs)
+    return decorated
+
+'''
 # Decorator to require a valid token
 def token_required(f):
     @wraps(f)
@@ -44,7 +86,7 @@ def admin_required(f):
 
     return decorated_function
 
-
+'''
 # Endpoint for user login
 @auth_blueprint.route('/login', methods=['POST'])
 def login():
