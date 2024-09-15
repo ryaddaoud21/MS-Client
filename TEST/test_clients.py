@@ -1,3 +1,5 @@
+def test_basic():
+    assert True
 '''
 import pytest
 from flask import Flask
