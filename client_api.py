@@ -1,7 +1,7 @@
 from flask import Flask
 from API.models import db
 from API.clients import clients_blueprint
-from API.auth import auth_blueprint
+from API.auth import auth_client_blueprint
 from threading import Thread
 from API.services.rabbitmq_consumer import consume_order_notifications
 from API.config import Config
@@ -14,7 +14,7 @@ app.config.from_object(Config)
 
 # Initialize the database
 db.init_app(app)
-app.register_blueprint(auth_blueprint, url_prefix='/')
+app.register_blueprint(auth_client_blueprint, url_prefix='/')
 app.register_blueprint(clients_blueprint, url_prefix='/')
 
 # Register the blueprints

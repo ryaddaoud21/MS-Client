@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request, make_response
 import secrets
 from functools import wraps
 
-auth_blueprint = Blueprint('auth', __name__)
+auth_client_blueprint = Blueprint('auth', __name__)
 
 # Simulated token storage (for simplicity)
 valid_tokens = {}
@@ -88,7 +88,7 @@ def admin_required(f):
 
 '''
 # Endpoint for user login
-@auth_blueprint.route('/login', methods=['POST'])
+@auth_client_blueprint.route('/login', methods=['POST'])
 def login():
     data = request.json
     if not data or not 'username' in data or not 'password' in data:
@@ -109,7 +109,7 @@ def login():
 
 
 # Endpoint for user logout
-@auth_blueprint.route('/logout', methods=['POST'])
+@auth_client_blueprint.route('/logout', methods=['POST'])
 @token_required
 def logout():
     token = request.headers.get('Authorization').split('Bearer ')[1]
@@ -123,13 +123,13 @@ def logout():
 
 
 # Example protected route for admins
-@auth_blueprint.route('/admin-only', methods=['GET'])
+@auth_client_blueprint.route('/admin-only', methods=['GET'])
 @token_required
 @admin_required
 def admin_only():
     return jsonify({"msg": "Welcome, admin!"}), 200
 
 
-@auth_blueprint.route('/', methods=['GET'])
+@auth_client_blueprint.route('/', methods=['GET'])
 def index():
     return jsonify({"msg": "Welcome to the CUSTOMER's API. The service is up and running!"}), 200
