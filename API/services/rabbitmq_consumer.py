@@ -31,7 +31,7 @@ def consume_order_notifications():
 
     def callback(ch, method, properties, body):
         message = json.loads(body)
-        formatted_message = f"Received order notification: {message}"
+        formatted_message = f"Received order notification for client: {message}"
 
         # Store the formatted notification
         order_notifications.append(formatted_message)
