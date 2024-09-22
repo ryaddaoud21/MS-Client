@@ -42,48 +42,4 @@ def consume_order_notifications():
     channel.start_consuming()
 
 
-def verify_token(token):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
-    channel = connection.channel()
-    channel.queue_declare(queue='auth_requests')
 
-    # Formater le message de requête de vérification
-    request_message = f"Demande de vérification de jeton envoyée : {token}"
-    print(request_message)
-    order_notifications.append(request_message)
-
-    message = {'token': token}
-    channel.basic_publish(exchange='', routing_key='auth_requests', body=json.dumps(message))
-
-    # Écouter la réponse
-    print("En attente de la réponse de vérification de jeton...")
-    response = None
-
-    for method_frame, properties, body in channel.consume('auth_responses', inactivity_timeout=1):
-        if body:
-            response = json.loads(body)
-            # Formater le message de réponse reçue
-            response_message = (
-                f"Réponse reçue : Authentifié = {response.get('authenticated')}, "
-                f"Rôle = {response.get('role')}"
-            )
-            print(response_message)
-            order_notifications.append(response_message)
-            break
-
-    if not response:
-        no_response_message = "Aucune réponse reçue pour la vérification du jeton."
-        print(no_response_message)
-        order_notifications.append(no_response_message)
-
-    connection.close()
-
-    if response.get('authenticated', False):
-        formatted_message = f"Utilisateur authentifié avec succès, rôle : {response.get('role')}"
-    else:
-        formatted_message = "Échec de l'authentification de l'utilisateur"
-
-    # Stocker la notification formatée
-    order_notifications.append(formatted_message)
-
-    return response.get('authenticated', False), response.get('role')
