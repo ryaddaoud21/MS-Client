@@ -33,6 +33,7 @@ def track_metrics(f):
 @clients_blueprint.route('/customers', methods=['GET'])
 @REQUEST_LATENCY.time()
 @token_required
+@track_metrics
 def get_clients():
     REQUEST_COUNT.inc()  # Incrémenter le compteur de requêtes
     clients = Client.query.all()
@@ -51,6 +52,8 @@ def get_clients():
 # Route pour obtenir un client par ID (GET)
 @clients_blueprint.route('/customers/<int:id>', methods=['GET'])
 @token_required
+@track_metrics
+
 def get_client(id):
     client = Client.query.get(id)
     if not client:
@@ -72,6 +75,8 @@ def get_client(id):
 @clients_blueprint.route('/customers', methods=['POST'])
 @token_required
 @admin_required
+@track_metrics
+
 def create_client():
     data = request.json
     new_client = Client(
@@ -94,6 +99,7 @@ def create_client():
 @clients_blueprint.route('/customers/<int:id>', methods=['PUT'])
 @token_required
 @admin_required
+@track_metrics
 def update_client(id):
     client = Client.query.get(id)
     if client:
@@ -116,6 +122,7 @@ def update_client(id):
 @clients_blueprint.route('/customers/<int:id>', methods=['DELETE'])
 @token_required
 @admin_required
+@track_metrics
 def delete_client(id):
     # Récupérer le client par son ID
     client = Client.query.get(id)
