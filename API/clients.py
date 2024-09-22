@@ -121,7 +121,7 @@ def delete_client(id):
         try:
             # Créer le message à envoyer à RabbitMQ
             message = {"client_id": id}
-            publish_message('client_deletion_queue', message)  # Utiliser la fonction de publication
+            publish_message('client_deletion_exchange', message)
 
         except Exception as e:
             # Gestion des erreurs liées à RabbitMQ
