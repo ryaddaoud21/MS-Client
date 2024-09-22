@@ -10,3 +10,9 @@ def get_rabbitmq_connection():
         except pika.exceptions.AMQPConnectionError:
             print("RabbitMQ n'est pas encore disponible. Nouvelle tentative dans 5 secondes...")
             time.sleep(5)
+
+
+
+def get_channel():
+    connection = get_rabbitmq_connection()
+    return connection.channel()

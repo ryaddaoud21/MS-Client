@@ -9,6 +9,8 @@ from API.auth  import token_required,admin_required
 
 
 # Création du blueprint pour les routes des clients
+from API.services.pika_config import get_channel
+
 clients_blueprint = Blueprint('clients', __name__)
 
 # Variables pour le monitoring Prometheus
@@ -98,6 +100,7 @@ def update_client(id):
     return jsonify({'message': 'Client not found'}), 404
 
 
+
 # Route pour supprimer un client par ID (DELETE)
 @clients_blueprint.route('/customers/<int:id>', methods=['DELETE'])
 @token_required
@@ -107,5 +110,20 @@ def delete_client(id):
     if client:
         db.session.delete(client)
         db.session.commit()
+        # Publier un message sur RabbitMQ pour indiquer la suppression du client
+        channel = get_channel()
+        channel.queue_declare(queue='client_deletion_queue', durable=True)
+
+        message = {"client_id": id}
+        channel.basic_publish(
+            exchange='',
+            routing_key='client_deletion_queue',
+            body=json.dumps(message),
+            properties=pika.BasicProperties(
+                delivery_mode=2,  # Rendre le message persistant
+            ))
+
         return jsonify({'message': 'Client deleted successfully'})
+
+
     return jsonify({'message': 'Client not found'}), 404
