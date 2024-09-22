@@ -9,6 +9,9 @@ from API.services.pika_config import get_rabbitmq_connection
 # A global variable to store notifications
 order_notifications = []
 
+
+
+
 # Route to get all notifications
 @clients_blueprint.route('/notifications', methods=['GET'])
 def get_notifications():

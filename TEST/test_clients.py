@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from flask import Flask
 from API.models import db, Client
@@ -104,12 +106,23 @@ def test_delete_client(client, admin_token):
         "pays": "France"
     }
     headers = {'Authorization': f'Bearer {admin_token}'}
-    create_response = client.post('/customers', json=client_data, headers=headers)
 
-    client_id = create_response.json['id']
-    delete_response = client.delete(f'/customers/{client_id}', headers=headers)
-    assert delete_response.status_code == 200
-    assert delete_response.json['message'] == 'Client deleted successfully'
+    # Mock de la fonction publish_message dans le bon module API.clients
+    with patch('API.clients.publish_message') as mock_publish:
+        # Créer le client
+        create_response = client.post('/customers', json=client_data, headers=headers)
+        client_id = create_response.json['id']
+
+        # Supprimer le client
+        delete_response = client.delete(f'/customers/{client_id}', headers=headers)
+
+        # Vérifier que la suppression est réussie
+        assert delete_response.status_code == 200
+        assert delete_response.json['message'] == 'Client deleted successfully'
+
+        # Vérifier que publish_message a bien été appelé avec les bons paramètres
+        mock_publish.assert_called_once_with('client_deletion_queue', {'client_id': client_id})
+
 
 # Test de tentative de suppression d'un client par un utilisateur non admin
 def test_delete_client_non_admin(client, admin_token, user_token):

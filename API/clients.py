@@ -1,3 +1,6 @@
+import json
+
+import pika
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import IntegrityError
 from flask import Flask, jsonify, request, make_response
@@ -9,7 +12,7 @@ from API.auth  import token_required,admin_required
 
 
 # Création du blueprint pour les routes des clients
-from API.services.pika_config import get_channel
+from API.services.pika_config import get_channel, publish_message
 
 clients_blueprint = Blueprint('clients', __name__)
 
@@ -106,24 +109,26 @@ def update_client(id):
 @token_required
 @admin_required
 def delete_client(id):
+    # Récupérer le client par son ID
     client = Client.query.get(id)
+
     if client:
+        # Supprimer le client de la base de données
         db.session.delete(client)
         db.session.commit()
-        # Publier un message sur RabbitMQ pour indiquer la suppression du client
-        channel = get_channel()
-        channel.queue_declare(queue='client_deletion_queue', durable=True)
 
-        message = {"client_id": id}
-        channel.basic_publish(
-            exchange='',
-            routing_key='client_deletion_queue',
-            body=json.dumps(message),
-            properties=pika.BasicProperties(
-                delivery_mode=2,  # Rendre le message persistant
-            ))
+        # Publier un message dans RabbitMQ pour indiquer la suppression du client
+        try:
+            # Créer le message à envoyer à RabbitMQ
+            message = {"client_id": id}
+            publish_message('client_deletion_queue', message)  # Utiliser la fonction de publication
 
-        return jsonify({'message': 'Client deleted successfully'})
+        except Exception as e:
+            # Gestion des erreurs liées à RabbitMQ
+            return jsonify({'message': 'Client deleted, but failed to notify RabbitMQ', 'error': str(e)}), 500
 
+        # Retourner un message de succès après suppression
+        return jsonify({'message': 'Client deleted successfully'}), 200
 
+    # Retourner une erreur 404 si le client n'est pas trouvé
     return jsonify({'message': 'Client not found'}), 404
