@@ -121,7 +121,7 @@ def test_delete_client(client, admin_token):
         assert delete_response.json['message'] == 'Client deleted successfully'
 
         # Vérifier que publish_message a bien été appelé avec les bons paramètres
-        mock_publish.assert_called_once_with('client_deletion_queue', {'client_id': client_id})
+        mock_publish.assert_called_once_with('client_deletion_exchange', {'client_id': client_id})
 
 
 # Test de tentative de suppression d'un client par un utilisateur non admin
