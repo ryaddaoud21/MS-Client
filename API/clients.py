@@ -1,5 +1,4 @@
 import json
-
 import pika
 from flask import Blueprint, jsonify, request
 from sqlalchemy.exc import IntegrityError
@@ -9,7 +8,7 @@ from prometheus_client import Counter, Summary, generate_latest, CONTENT_TYPE_LA
 from prometheus_client import multiprocess, CollectorRegistry
 from prometheus_client import multiprocess
 from API.auth  import token_required,admin_required
-
+from functools import wraps
 
 # Création du blueprint pour les routes des clients
 from API.services.pika_config import get_channel, publish_message
@@ -19,6 +18,15 @@ clients_blueprint = Blueprint('clients', __name__)
 # Variables pour le monitoring Prometheus
 REQUEST_COUNT = Counter('client_requests_total', 'Total number of requests for clients')
 REQUEST_LATENCY = Summary('client_processing_seconds', 'Time spent processing client requests')
+
+# Décorateur pour le suivi des métriques
+def track_metrics(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        REQUEST_COUNT.inc()  # Incrément du compteur de requêtes
+        with REQUEST_LATENCY.time():  # Mesure du temps de traitement
+            return f(*args, **kwargs)
+    return decorated_function
 
 
 # Route pour obtenir tous les clients (GET)
