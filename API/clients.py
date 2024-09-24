@@ -79,6 +79,13 @@ def get_client(id):
 
 def create_client():
     data = request.json
+    # Validation des données pour éviter les injections ou données incorrectes
+    if not isinstance(data.get('email'), str) or '@' not in data['email']:
+        return jsonify({'error': 'Email non valide'}), 400
+
+    if not isinstance(data.get('nom'), str) or len(data['nom']) == 0:
+        return jsonify({'error': 'Nom non valide'}), 400
+
     new_client = Client(
         nom=data['nom'],
         prenom=data['prenom'],
